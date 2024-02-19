@@ -4,9 +4,11 @@ package com.hexaware.lms.service.impl;
 import com.hexaware.lms.Mapper.impl.BookMapper;
 import com.hexaware.lms.dto.BookDto;
 import com.hexaware.lms.entity.Book;
+import com.hexaware.lms.entity.BookCategoryMapper;
+import com.hexaware.lms.entity.Loan;
+import com.hexaware.lms.entity.Reservation;
 import com.hexaware.lms.exception.ResourceNotFoundException;
-import com.hexaware.lms.repository.BookRepository;
-import com.hexaware.lms.repository.CategoryRepository;
+import com.hexaware.lms.repository.*;
 import com.hexaware.lms.service.BookService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -26,7 +28,10 @@ public class BookServiceImpl implements BookService {
 
     private final BookMapper bookMapper;
 
-    private final CategoryRepository categoryRepository;
+    private final LoanRepository loanRepository;
+
+    private final ReservationRepository reservationRepository;
+    private final BookCategoryMapperRepository bookCategoryMapperRepository;
 
 
     //create/add book
@@ -124,6 +129,27 @@ public class BookServiceImpl implements BookService {
         if (!isExists(id)) {
             throw new ResourceNotFoundException("book", "bookid", id);
         }
+        Reservation reservation = reservationRepository.findByBook(bookRepository.findById(id));
+        Loan loan = loanRepository.findByBook(bookRepository.findById(id));
+        BookCategoryMapper bookCategoryMapper = bookCategoryMapperRepository.findByBook(bookRepository.findById(id));
+
+        if(reservation!=null)
+        {
+            reservation.setBook(null);
+            reservationRepository.save(reservation);
+        }
+        if(loan!=null)
+        {
+            loan.setBook(null);
+            loanRepository.save(loan);
+        }
+
+        if(bookCategoryMapper!=null)
+        {
+            bookCategoryMapper.setBook(null);
+            bookCategoryMapperRepository.save(bookCategoryMapper);
+        }
+
         log.debug("Exited BookServiceImpl.delete().");
         bookRepository.deleteById(id);
     }

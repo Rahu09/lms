@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface LoanRepository extends JpaRepository<Loan, Long> {
     List<Loan> findAllByBook(Book book);
@@ -16,4 +17,6 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
 
     @Query("SELECT l FROM Loan l WHERE DATEDIFF(l.returnDate, l.issueDate) > 7")
     List<Loan> overdueLoans();
+
+    Loan findByBook(Optional<Book> byId);
 }
