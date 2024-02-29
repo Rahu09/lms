@@ -23,6 +23,7 @@ import java.util.List;
 @PreAuthorize("hasRole('ADMIN')")
 @Tag(name = "Admin")
 @Slf4j
+@CrossOrigin("*")
 public class AdminController {
     private final AdminService adminService;
         @Operation(

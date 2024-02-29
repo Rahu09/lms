@@ -23,13 +23,11 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/api/v1/book")
+@CrossOrigin("*")
 public class BookController {
-
     private final BookService bookService;
 
-
     //create book
-
     @PostMapping(path= "/addbook")
     public ResponseEntity<BookDto> createBook(@Valid @RequestBody BookDto bookDto)  {
         log.debug("Entered createbook() controller.");
@@ -206,8 +204,6 @@ public class BookController {
             log.debug("Exited getBookByAuthor() controller with HttpStatus.INTERNAL_SERVER_ERROR)and exception: \n"+e.toString());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
-
-
     }
 
     //find by language

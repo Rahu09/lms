@@ -28,6 +28,8 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 @EnableMethodSecurity
 public class SecurityConfiguration {
     private static final String[] WHITE_LIST_URL = {"/api/v1/auth/**",
+            "/actuator",
+            "/actuator/**",
             "/v2/api-docs",
             "/v3/api-docs",
             "/v3/api-docs/**",
