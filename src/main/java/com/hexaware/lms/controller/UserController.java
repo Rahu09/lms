@@ -24,7 +24,6 @@ import java.util.List;
 @RequestMapping("/api/v1/user")
 @PreAuthorize("hasRole('USER')")
 @Slf4j
-@CrossOrigin("*")
 public class UserController {
     private final UserService userService;
 

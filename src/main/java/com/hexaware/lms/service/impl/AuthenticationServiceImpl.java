@@ -4,6 +4,7 @@ import com.hexaware.lms.config.auth.JwtService;
 import com.hexaware.lms.dto.AuthenticationRequest;
 import com.hexaware.lms.dto.AuthenticationResponse;
 import com.hexaware.lms.dto.RegisterRequestDTO;
+import com.hexaware.lms.dto.UserDetailDto;
 import com.hexaware.lms.entity.Authentication;
 import com.hexaware.lms.entity.Token;
 import com.hexaware.lms.entity.User;
@@ -43,6 +44,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .gender(request.getGender())
                 .email(request.getEmail())
                 .noOfBooksLoan(request.getNoOfBooksLoan())
+                .image(request.getImage())
                 .build();
         User savedUser = userRepository.save(user);
 
@@ -63,6 +65,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         AuthenticationResponse authenticationResponse = AuthenticationResponse
                 .builder()
                 .token(jwtToken)
+                .email(auth.getEmail())
                 .build();
 
         log.debug("exiting AuthenticationServiceImpl.register() service with return data: {}", authenticationResponse.toString());
@@ -80,18 +83,41 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         var auth = authenticationRepository.findByEmail(request.getEmail());
         if(auth.isEmpty()) throw new ResourceNotFoundException("authentication","email",request.getEmail());
+        var user = userRepository.findById(auth.get().getId());
         var jwtToken = jwtService.generateToken(auth.get());
+
 
         revokeAllUserTokens(auth.get());
         saveUserToken(auth.get(),jwtToken);
         AuthenticationResponse authenticationResponse =  AuthenticationResponse
                 .builder()
                 .token(jwtToken)
+                .email(auth.get().getEmail())
                 .build();
 
         log.debug("exiting AuthenticationServiceImpl.authenticate() service with return data: {}", authenticationResponse.toString());
         return authenticationResponse;
     }
+
+    @Override
+    public UserDetailDto getDetails(String email) throws ResourceNotFoundException {
+        log.debug("entered AuthenticationServiceImpl.UserDetailDto() service with args: {}",email);
+
+        var auth = authenticationRepository.findByEmail(email);
+        if(auth.isEmpty()) throw new ResourceNotFoundException("authentication","email",email);
+        var user = userRepository.findById(auth.get().getId());
+
+        UserDetailDto userDetailDto = UserDetailDto.builder()
+                .email(auth.get().getEmail())
+                .firstName(user.get().getFirstName())
+                .lastName(user.get().getLastName())
+                .image(user.get().getImage())
+                .role(auth.get().getRole().toString())
+                .id(user.get().getId())
+                .build();
+        return userDetailDto;
+    }
+
     private void revokeAllUserTokens(Authentication auth) {
         log.debug("entered AuthenticationServiceImpl.revokeAllUserTokens() service with args: {}",auth.toString());
         var validUserTokens = tokenRepository.findAllValidTokenByAuth(auth.getId());

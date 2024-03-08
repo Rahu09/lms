@@ -19,4 +19,7 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
     List<Loan> overdueLoans();
 
     Loan findByBook(Optional<Book> byId);
+
+    @Query("SELECT COUNT(l) FROM Loan l WHERE l.book.id = :id AND l.status = 'LOAN'")
+    Integer getLoanCount(Long id);
 }

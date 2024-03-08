@@ -1,3 +1,5 @@
+
+
 package com.hexaware.lms.dto;
 
 import lombok.AllArgsConstructor;
@@ -9,11 +11,11 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class AuthenticationResponse {
-    private String token;
-//    private String role;
-//    private String firstName;
-//    private String lastName;
+public class UserDetailDto {
+    private String role;
+    private String firstName;
+    private String lastName;
     private String email;
-//    private String image;
+    private String image;
+    private Long id;
 }

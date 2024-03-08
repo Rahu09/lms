@@ -25,6 +25,7 @@ public class User {
     private String contactNo;
     private String address;
     private int noOfBooksLoan;
+    private String image="";
 
     @Enumerated(value = EnumType.STRING)
     private Gender gender;

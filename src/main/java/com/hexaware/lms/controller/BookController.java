@@ -17,13 +17,13 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 @Tag(name = "User")
 @RestController
 @RequiredArgsConstructor
 @Slf4j
 @RequestMapping("/api/v1/book")
-@CrossOrigin("*")
 public class BookController {
     private final BookService bookService;
 
@@ -256,6 +256,62 @@ public class BookController {
         }
 
 
+    }
+
+    //get category by bookid
+    @GetMapping(path = "/bookcategory/{id}")
+    public ResponseEntity<List<String>> getCategoryByBook(@PathVariable("id") @NotNull Long id) throws ResourceNotFoundException {
+
+        log.debug("Entered getCategoryByBook controller.");
+        log.info("Request recieved: api/v1/book/books/{id}");
+        Optional<List<String>> category;
+
+        category = bookService.findCategory(id);
+        log.debug("Exited getCategoryByBook() controller with HttpStatus.OK.");
+        return new ResponseEntity<>(category.get(), HttpStatus.OK);
+
+    }
+
+    //get loan count by bookid
+    @GetMapping(path = "/bookloancount/{id}")
+    public ResponseEntity<Integer> getLoanCountByBook(@PathVariable("id") @NotNull Long id) throws ResourceNotFoundException {
+
+        log.debug("Entered getLoanCountByBook controller.");
+        log.info("Request recieved: api/v1/book/bookloancount/{id}");
+
+        Integer loanCount = bookService.getLoanCount(id);
+
+        log.debug("Exited getLoanCountByBook() controller with HttpStatus.OK.");
+        return new ResponseEntity<>(loanCount, HttpStatus.OK);
+
+    }
+
+    //get reservation count by bookid
+    @GetMapping(path = "/bookreservationcount/{id}")
+    public ResponseEntity<Integer> getReservationCountByBook(@PathVariable("id") @NotNull Long id) throws ResourceNotFoundException {
+
+        log.debug("Entered getReservationCountByBook controller.");
+        log.info("Request recieved: api/v1/book/bookreservationcount/{id}");
+
+        Integer reservationCount = bookService.getReservationCount(id);
+
+        log.debug("Exited getReservationCountByBook() controller with HttpStatus.OK.");
+        return new ResponseEntity<>(reservationCount, HttpStatus.OK);
+
+    }
+
+    //get no of books loaned by a user
+    @PostMapping(path = "/userbookloancount")
+    public ResponseEntity<Integer> getNoOfBooksLoanByEmail(@RequestBody Map<String, String> requestBody) {
+        String userEmail = requestBody.get("email");
+
+        log.debug("Entered getNoOfBooksLoanByEmail controller.");
+        log.info("Request received: POST api/v1/book/userbookloancount");
+
+        Integer noOfBooksLoan = bookService.findNoOfBooksLoanByEmail(userEmail);
+
+        log.debug("Exited getNoOfBooksLoanByEmail() controller with HttpStatus.OK.");
+        return ResponseEntity.ok(noOfBooksLoan);
     }
 
 

@@ -40,4 +40,5 @@ public class RegisterRequestDTO {
     private int noOfBooksLoan;
     @NotNull
     private Gender gender;
+    private String image;
 }

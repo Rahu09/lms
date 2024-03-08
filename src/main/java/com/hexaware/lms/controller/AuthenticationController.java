@@ -3,12 +3,14 @@ package com.hexaware.lms.controller;
 import com.hexaware.lms.dto.AuthenticationRequest;
 import com.hexaware.lms.dto.AuthenticationResponse;
 import com.hexaware.lms.dto.RegisterRequestDTO;
+import com.hexaware.lms.dto.UserDetailDto;
 import com.hexaware.lms.exception.ResourceNotFoundException;
 import com.hexaware.lms.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -37,17 +39,23 @@ public class AuthenticationController {
     ) throws ResourceNotFoundException {
         log.debug("entered authenticate() controller");
         log.info("Request received: {} - {}", "authenticate()", "/api/v1/auth/authenticate");
-        try {
-            AuthenticationResponse response = authenticationService.authenticate(request);
 
-            log.debug("exiting authenticate() controller with HttpStatus.OK");
-            return ResponseEntity.ok(response);
-        }catch (ResourceNotFoundException e){
-            log.error("exiting authenticate() controller with HttpStatus.UNAUTHORIZED and exception: "+e.toString());
-            return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
-        }catch (Exception e){
-            log.error("exiting authenticate() controller with HttpStatus.INTERNAL_SERVER_ERROR and exception: "+e.toString());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        AuthenticationResponse response = authenticationService.authenticate(request);
+
+        log.debug("exiting authenticate() controller with HttpStatus.OK");
+        return ResponseEntity.ok(response);
+    }
+    @GetMapping("/getDetails/{email}")
+    @PreAuthorize("hasAnyRole('ADMIN','USER')")
+    public ResponseEntity<UserDetailDto> getDetails(
+            @PathVariable("email") String email
+    ) throws ResourceNotFoundException {
+        log.debug("entered getDetails() controller");
+        log.info("Request received: {} - {}", "getDetails()", "/api/v1/auth/getDetails");
+
+        UserDetailDto userDetailDto = authenticationService.getDetails(email);
+        log.debug("exiting getDetails() controller with HttpStatus.OK");
+        return new ResponseEntity<>(userDetailDto,HttpStatus.OK);
+
     }
 }
