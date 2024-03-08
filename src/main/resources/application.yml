@@ -14,6 +14,10 @@ spring:
         format_sql: true
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
-
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: beans,health,env,caches,configprops,httpexchanges,info
 app:
   SECRET: ${AUTHENTICATION_SECRET}

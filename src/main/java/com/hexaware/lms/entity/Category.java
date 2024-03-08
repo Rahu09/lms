@@ -13,7 +13,7 @@ import java.util.List;
 @AllArgsConstructor
 @Table(name = "category")
 @Builder
-public class Category {
+    public class Category {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "category_id_seq")
     private Long id;

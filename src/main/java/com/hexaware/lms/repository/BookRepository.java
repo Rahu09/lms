@@ -3,6 +3,7 @@ package com.hexaware.lms.repository;
 import com.hexaware.lms.entity.Book;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -29,4 +30,16 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("SELECT bm.book FROM BookCategoryMapper bm JOIN bm.category c WHERE c.category = ?1")
     Optional<List<Book>> findByCategory(String categoryName);
 
+    @Query("SELECT b FROM Book b " +
+            "WHERE b.authorName IN :authorNames " +
+            "   OR b.language IN :languages " +
+            "   OR EXISTS (SELECT bcm FROM BookCategoryMapper bcm " +
+            "              WHERE bcm.book = b " +
+            "                AND bcm.category.category IN :categoryNames)")
+    List<Book> findByFilters( List<String> authorName, List<String> language, List<String> categoryName);
+
+    @Query("SELECT c.category FROM Category c " +
+            "JOIN BookCategoryMapper bcm ON c.id = bcm.category.id " +
+            "WHERE bcm.book.id = :bookId")
+    Optional<List<String>> findCategoryByBookId(Long bookId);
 }

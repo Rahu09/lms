@@ -48,6 +48,7 @@ public class TestToInsertData {
                 .gender(Gender.MALE)
                 .email("tiwarirahul0809@gmail.com")
                 .noOfBooksLoan(0)
+                .image("")
                 .build();
 
         User savedUser1 = userRepository.save(user1);
@@ -72,6 +73,7 @@ public class TestToInsertData {
                 .gender(Gender.MALE)
                 .email("john.doe@example.com")
                 .noOfBooksLoan(0)
+                .image("")
                 .build();
 
         User savedUser2 = userRepository.save(user2);
@@ -95,6 +97,7 @@ public class TestToInsertData {
                 .gender(Gender.FEMALE)
                 .email("jane.smith@example.com")
                 .noOfBooksLoan(3)
+                .image("")
                 .build();
 
         User savedUser3 = userRepository.save(user3);
@@ -118,6 +121,7 @@ public class TestToInsertData {
                 .gender(Gender.MALE)
                 .email("bob.jones@example.com")
                 .noOfBooksLoan(2)
+                .image("")
                 .build();
 
         User savedUser4 = userRepository.save(user4);
@@ -141,6 +145,7 @@ public class TestToInsertData {
                 .gender(Gender.FEMALE)
                 .email("alice.jenkins@example.com")
                 .noOfBooksLoan(1)
+                .image("")
                 .build();
 
         User savedUser5 = userRepository.save(user5);
@@ -164,6 +169,7 @@ public class TestToInsertData {
                 .gender(Gender.MALE)
                 .email("sam.wilson@example.com")
                 .noOfBooksLoan(1)
+                .image("")
                 .build();
 
         User savedUser6 = userRepository.save(user6);
@@ -187,6 +193,7 @@ public class TestToInsertData {
                 .gender(Gender.FEMALE)
                 .email("emma.white@example.com")
                 .noOfBooksLoan(1)
+                .image("")
                 .build();
 
         User savedUser7 = userRepository.save(user7);
@@ -210,6 +217,7 @@ public class TestToInsertData {
                 .gender(Gender.MALE)
                 .email("michael.brown@example.com")
                 .noOfBooksLoan(1)
+                .image("")
                 .build();
 
         User savedUser8 = userRepository.save(user8);
@@ -233,6 +241,7 @@ public class TestToInsertData {
                 .gender(Gender.FEMALE)
                 .email("lisa.jones@example.com")
                 .noOfBooksLoan(4)
+                .image("")
                 .build();
 
         User savedUser9 = userRepository.save(user9);
@@ -257,6 +266,7 @@ public class TestToInsertData {
                 .gender(Gender.MALE)
                 .email("peter.wang@example.com")
                 .noOfBooksLoan(3)
+                .image("")
                 .build();
 
         User savedUser10 = userRepository.save(user10);

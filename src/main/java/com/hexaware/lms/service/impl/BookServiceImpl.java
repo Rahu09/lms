@@ -33,6 +33,8 @@ public class BookServiceImpl implements BookService {
     private final ReservationRepository reservationRepository;
     private final BookCategoryMapperRepository bookCategoryMapperRepository;
 
+    private final UserRepository userRepository;
+
 
     //create/add book
     //full update book
@@ -212,6 +214,38 @@ public class BookServiceImpl implements BookService {
         BookDto bookDto1 = bookMapper.mapTo(book);
         log.debug("Exited BookServiceImpl.searchBarBook() with return data: {} ", bookDto1.toString());
         return bookDto1;
+    }
+
+    @Override
+    public Optional<List<String>> findCategory(Long id){
+        log.debug("Entered BokServiceImpl.findCategory()  with arg: {}", id);
+        Optional<List<String>> category = bookRepository.findCategoryByBookId(id);
+        log.debug("Exited BookServiceImpl.findCategory() with return data: {} ", category);
+        return category;
+    }
+
+    @Override
+    public Integer getLoanCount(Long id) {
+        log.debug("Entered BokServiceImpl.getLoanCount()  with arg: {}", id);
+        Integer loanCount = loanRepository.getLoanCount(id);
+        log.debug("Exited BookServiceImpl.getLoanCount() with return data: {} ", loanCount);
+        return loanCount;
+    }
+
+    @Override
+    public Integer getReservationCount(Long id) {
+        log.debug("Entered BokServiceImpl.getReservationCount()  with arg: {}", id);
+        Integer reservationCount = reservationRepository.getReservationCount(id);
+        log.debug("Exited BookServiceImpl.getReservationCount() with return data: {} ", reservationCount);
+        return reservationCount;
+    }
+
+    @Override
+    public Integer findNoOfBooksLoanByEmail(String userEmail) {
+        log.debug("Entered BokServiceImpl.getReservationCount()  with arg: {}", userEmail);
+        Integer noOfBooksLoan = userRepository.findNoOfBooksLoanByEmail(userEmail);
+        log.debug("Exited BookServiceImpl.getReservationCount() with return data: {} ", noOfBooksLoan);
+        return noOfBooksLoan;
     }
 
 

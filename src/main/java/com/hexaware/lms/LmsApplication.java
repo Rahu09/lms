@@ -18,8 +18,6 @@ import java.util.logging.Logger;
 @SpringBootApplication
 @RestController
 public class LmsApplication {
-
-
 	public static void main(String[] args) {
 		log.debug("Applicaiton is running");
 		SpringApplication.run(LmsApplication.class, args);

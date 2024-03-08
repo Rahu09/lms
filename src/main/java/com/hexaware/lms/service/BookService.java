@@ -33,4 +33,12 @@ public interface BookService {
     Optional<List<Book>> findByCategory(String search) throws ResourceNotFoundException;
 
     BookDto fullUpdate(BookDto bookDto, Long id);
+
+    Optional<List<String>> findCategory(Long id);
+
+    Integer getLoanCount(Long id);
+
+    Integer getReservationCount(Long userId);
+
+    Integer findNoOfBooksLoanByEmail(String userEmail);
 }
