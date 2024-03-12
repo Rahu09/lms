@@ -1,6 +1,7 @@
 package com.hexaware.lms.controller;
 
 import com.hexaware.lms.dto.BookDto;
+import com.hexaware.lms.dto.BookFilterDto;
 import com.hexaware.lms.entity.Book;
 import com.hexaware.lms.exception.ResourceNotFoundException;
 import com.hexaware.lms.service.BookService;
@@ -12,10 +13,13 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -29,7 +33,7 @@ public class BookController {
 
     //create book
     @PostMapping(path= "/addbook")
-    public ResponseEntity<BookDto> createBook(@Valid @RequestBody BookDto bookDto)  {
+    public ResponseEntity<BookDto> createBook(@Valid @RequestBody BookDto bookDto) throws IOException {
         log.debug("Entered createbook() controller.");
         log.info("Request recieved: /api/v1/book/addbook");
         BookDto savedBookDto = bookService.save(bookDto);
@@ -38,12 +42,33 @@ public class BookController {
     }
 
     //get all books
+//    @GetMapping(path="/books")
+//    public List<BookDto> getAllBooks(){
+//        log.debug("Entered getallbooks() controller.");
+//        log.info("Request recieved: /api/v1/book/books");
+//        List<BookDto> books = bookService.findAll();
+//        log.debug("Exited getallbooks() controller.");
+//        return books;
+//    }
+
     @GetMapping(path="/books")
-    public List<BookDto> getAllBooks(){
+    public Page<BookDto> getAllBooks(Pageable pageable){
         log.debug("Entered getallbooks() controller.");
         log.info("Request recieved: /api/v1/book/books");
-        List<BookDto> books = bookService.findAll();
+        Page<BookDto> books = bookService.findAll(pageable);
         log.debug("Exited getallbooks() controller.");
+        return books;
+    }
+
+    @GetMapping(path="/bookFilter")
+    public Page<BookDto> getBookFilter(
+            Pageable pageable,
+            @RequestBody BookFilterDto bookFilterDto
+    ){
+        log.debug("Entered getBookFilter() controller.");
+        log.info("Request recieved: /api/v1/book/bookFilter");
+        Page<BookDto> books = bookService.bookFilter(bookFilterDto,pageable);
+        log.debug("Exited getBookFilter() controller.");
         return books;
     }
 
@@ -92,7 +117,7 @@ public class BookController {
     }
 
     //book full update
-    @PutMapping(path = "/books/{id}")
+    @PutMapping(path = "/updateBook/{id}")
     public ResponseEntity<BookDto> fullUpdateBook(@PathVariable("id") @NotNull Long id, @Valid @RequestBody BookDto bookDto) {
         log.debug("Entered fullupdatebook() controller.");
         log.info("Request recieved: api/v1/book/books/{id}");
@@ -110,7 +135,7 @@ public class BookController {
     }
 
     //book partial update
-    @PatchMapping(path="/books/{id}")
+    @PatchMapping(path="/updateBook/{id}")
     public ResponseEntity<BookDto> partialUpdate(@PathVariable("id") @NotNull Long id, @NotNull @RequestBody BookDto bookDto) throws ResourceNotFoundException{
 
         log.debug("Entered partialUpdatebook() controller.");
@@ -313,6 +338,7 @@ public class BookController {
         log.debug("Exited getNoOfBooksLoanByEmail() controller with HttpStatus.OK.");
         return ResponseEntity.ok(noOfBooksLoan);
     }
+
 
 
 }

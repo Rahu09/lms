@@ -1,17 +1,25 @@
 package com.hexaware.lms.controller;
 
-import com.hexaware.lms.dto.AuthenticationRequest;
-import com.hexaware.lms.dto.AuthenticationResponse;
-import com.hexaware.lms.dto.RegisterRequestDTO;
-import com.hexaware.lms.dto.UserDetailDto;
+import com.hexaware.lms.dto.*;
 import com.hexaware.lms.exception.ResourceNotFoundException;
 import com.hexaware.lms.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.util.http.fileupload.IOUtils;
+//import org.apache.commons.io.IOUtils;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Base64;
 
 @RestController
 @RequestMapping("/api/v1/auth")
@@ -58,4 +66,20 @@ public class AuthenticationController {
         return new ResponseEntity<>(userDetailDto,HttpStatus.OK);
 
     }
+//    @GetMapping("/{id}")
+//    public ResponseEntity<imageDto> getBook(@PathVariable Long id) throws IOException {
+//
+//        // Retrieve book information from your data source (e.g., database)
+//        File imageFile = new File("E:/production/hexa/lms/lms/src/main/resources/static/images/a-Dolls-house.jpg");
+//        FileInputStream fileInputStreamReader = new FileInputStream(imageFile);
+//        byte[] imageData = new byte[(int) imageFile.length()];
+//        fileInputStreamReader.read(imageData);
+//        fileInputStreamReader.close();
+//        String base64Image = Base64.getEncoder().encodeToString(imageData);
+//
+//        // Create the response object
+//        imageDto bookResponse = new imageDto("nameeee", base64Image);
+//
+//        return ResponseEntity.ok(bookResponse);
+//    }
 }

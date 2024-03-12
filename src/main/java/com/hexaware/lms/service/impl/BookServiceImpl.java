@@ -3,6 +3,7 @@ package com.hexaware.lms.service.impl;
 
 import com.hexaware.lms.Mapper.impl.BookMapper;
 import com.hexaware.lms.dto.BookDto;
+import com.hexaware.lms.dto.BookFilterDto;
 import com.hexaware.lms.entity.Book;
 import com.hexaware.lms.entity.BookCategoryMapper;
 import com.hexaware.lms.entity.Loan;
@@ -12,8 +13,15 @@ import com.hexaware.lms.repository.*;
 import com.hexaware.lms.service.BookService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -39,14 +47,13 @@ public class BookServiceImpl implements BookService {
     //create/add book
     //full update book
     @Override
-    public BookDto save(BookDto bookDto) {
+    public BookDto save(BookDto bookDto) throws IOException {
         log.debug("Entered BokServiceImpl.save()  with arg: {} ", bookDto.toString());
         Book book = bookRepository.save(bookMapper.mapFrom(bookDto));
-        BookDto bookDto1 = bookMapper.mapTo(book);
-        log.debug("Exited BookServiceImpl.save()  with return data: {} ", bookDto1.toString());
+        BookDto savedBookDto = bookMapper.mapTo(book);
+        log.debug("Exited BookServiceImpl.save()  with return data: {} ", savedBookDto.toString());
 
-        return bookDto1;
-
+        return savedBookDto;
     }
 
     // read/get all books
@@ -56,8 +63,113 @@ public class BookServiceImpl implements BookService {
         //map to optional
 
         List<BookDto> bookDtos = book.stream()
-                .map(bookMapper::mapTo)
+                .map(it->{
+                    String base64Image = "";
+                    try{
+                        File imageFile = new File("E:/production/hexa/lms/lms/src/main/resources/static/"+it.getImageURL());
+                        FileInputStream fileInputStreamReader = new FileInputStream(imageFile);
+                        byte[] imageData = new byte[(int) imageFile.length()];
+                        fileInputStreamReader.read(imageData);
+                        fileInputStreamReader.close();
+                        base64Image = Base64.getEncoder().encodeToString(imageData);
+                    } catch (Exception e){
+                        log.info("error in finding image");
+                    }
+
+                    return BookDto.builder()
+                            .imageURL(base64Image)
+                            .title(it.getTitle())
+                            .publisherName(it.getPublisherName())
+                            .pages(it.getPages())
+                            .link(it.getLink())
+                            .language(it.getLanguage())
+                            .isbn(it.getIsbn())
+                            .edition(it.getEdition())
+                            .id(it.getId())
+                            .cost(it.getCost())
+                            .bookCount(it.getBookCount())
+                            .authorName(it.getAuthorName())
+                            .description(it.getDescription())
+                            .build();
+                })
                 .collect(Collectors.toList());
+        log.debug("Exited BookServiceImpl.findAll()  with return data: {} ", bookDtos.toString());
+        return bookDtos;
+    }
+
+    @Override
+    public Page<BookDto> findAll(Pageable pageable) {
+        Page<Book> book = bookRepository.findAll(pageable);
+
+        Page<BookDto> bookDtos = book
+                .map(it->{
+                    String base64Image = "";
+                    try{
+                        File imageFile = new File("E:/production/hexa/lms/lms/src/main/resources/static/"+it.getImageURL());
+                        FileInputStream fileInputStreamReader = new FileInputStream(imageFile);
+                        byte[] imageData = new byte[(int) imageFile.length()];
+                        fileInputStreamReader.read(imageData);
+                        fileInputStreamReader.close();
+                        base64Image = Base64.getEncoder().encodeToString(imageData);
+                    } catch (Exception e){
+                        log.info("error in finding image");
+                    }
+
+                    return BookDto.builder()
+                            .imageURL(base64Image)
+                            .title(it.getTitle())
+                            .publisherName(it.getPublisherName())
+                            .pages(it.getPages())
+                            .link(it.getLink())
+                            .language(it.getLanguage())
+                            .isbn(it.getIsbn())
+                            .edition(it.getEdition())
+                            .id(it.getId())
+                            .cost(it.getCost())
+                            .bookCount(it.getBookCount())
+                            .authorName(it.getAuthorName())
+                            .description(it.getDescription())
+                            .build();
+                });
+        log.debug("Exited BookServiceImpl.findAll()  with return data: {} ", bookDtos.toString());
+        return bookDtos;
+    }
+
+    @Override
+    public Page<BookDto> bookFilter(BookFilterDto bookFilterDto, Pageable pageable) {
+        log.info(bookFilterDto.getLanguageList().toString());
+        Page<Book> bookList = bookRepository.findByFilters(bookFilterDto.getAuthorList(),bookFilterDto.getLanguageList(),bookFilterDto.getCategoryList(),pageable);
+
+        Page<BookDto> bookDtos = bookList
+                .map(it->{
+                    String base64Image = "";
+                    try{
+                        File imageFile = new File("E:/production/hexa/lms/lms/src/main/resources/static/"+it.getImageURL());
+                        FileInputStream fileInputStreamReader = new FileInputStream(imageFile);
+                        byte[] imageData = new byte[(int) imageFile.length()];
+                        fileInputStreamReader.read(imageData);
+                        fileInputStreamReader.close();
+                        base64Image = Base64.getEncoder().encodeToString(imageData);
+                    } catch (Exception e){
+                        log.info("error in finding image");
+                    }
+
+                    return BookDto.builder()
+                            .imageURL(base64Image)
+                            .title(it.getTitle())
+                            .publisherName(it.getPublisherName())
+                            .pages(it.getPages())
+                            .link(it.getLink())
+                            .language(it.getLanguage())
+                            .isbn(it.getIsbn())
+                            .edition(it.getEdition())
+                            .id(it.getId())
+                            .cost(it.getCost())
+                            .bookCount(it.getBookCount())
+                            .authorName(it.getAuthorName())
+                            .description(it.getDescription())
+                            .build();
+                });
         log.debug("Exited BookServiceImpl.findAll()  with return data: {} ", bookDtos.toString());
         return bookDtos;
     }
@@ -72,6 +184,17 @@ public class BookServiceImpl implements BookService {
         if (optionalBook.isPresent()) {
             Book book = optionalBook.get();
             bookDto = bookMapper.mapTo(book);
+            try{
+                File imageFile = new File("E:/production/hexa/lms/lms/src/main/resources/static/"+bookDto.getImageURL());
+                FileInputStream fileInputStreamReader = new FileInputStream(imageFile);
+                byte[] imageData = new byte[(int) imageFile.length()];
+                fileInputStreamReader.read(imageData);
+                fileInputStreamReader.close();
+                String base64Image = Base64.getEncoder().encodeToString(imageData);
+                bookDto.setImageURL(base64Image);
+            } catch (Exception e){
+                log.info("error in finding image");
+            }
         } else {
             throw new ResourceNotFoundException("book", "bookid", id);
         }

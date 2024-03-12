@@ -1,5 +1,6 @@
 package com.hexaware.lms.service;
 
+import com.hexaware.lms.dto.ReservationDto;
 import com.hexaware.lms.entity.Loan;
 import com.hexaware.lms.entity.Reservation;
 import com.hexaware.lms.exception.LoanLimitReachedException;
@@ -27,4 +28,5 @@ public interface UserService {
 
     SubmitBookDTO submitBook(long loanId, long fineAmount) throws ResourceNotFoundException, AmountInsufficientException,IllegalArgumentException;
 
+    List<ReservationDto> getUserReservation(long userId) throws ResourceNotFoundException;
 }

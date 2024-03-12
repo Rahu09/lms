@@ -1,6 +1,8 @@
 package com.hexaware.lms.repository;
 
 import com.hexaware.lms.entity.Book;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -36,7 +38,7 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             "   OR EXISTS (SELECT bcm FROM BookCategoryMapper bcm " +
             "              WHERE bcm.book = b " +
             "                AND bcm.category.category IN :categoryNames)")
-    List<Book> findByFilters( List<String> authorName, List<String> language, List<String> categoryName);
+    Page<Book> findByFilters(List<String> authorNames, List<String> languages, List<String> categoryNames, Pageable pageable);
 
     @Query("SELECT c.category FROM Category c " +
             "JOIN BookCategoryMapper bcm ON c.id = bcm.category.id " +

@@ -1,5 +1,6 @@
 package com.hexaware.lms.controller;
 
+import com.hexaware.lms.dto.ReservationDto;
 import com.hexaware.lms.entity.Loan;
 import com.hexaware.lms.entity.Reservation;
 import com.hexaware.lms.exception.LoanLimitReachedException;
@@ -135,6 +136,26 @@ public class UserController {
         }
         catch (Exception e){
             log.error("exiting submitBook() controller with HttpStatus.INTERNAL_SERVER_ERROR and exception: \n"+e.toString());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping(path = "/userReservationHistory/{userId}")
+    public ResponseEntity<List<ReservationDto>> userReservationHistory(
+            @PathVariable("userId")@NotNull long userId
+    ) throws ResourceNotFoundException {
+        log.debug("entered userReservationHistory() controller");
+        log.info("Request received: {} - {}", "userReservationHistory()", "/api/v1/user/userReservationHistory/{userId}");
+        try{
+            List<ReservationDto> userReservationHistoryList = userService.getUserReservation(userId);
+
+            log.debug("exiting userReservationHistory() controller with HttpStatus.OK");
+            return new ResponseEntity<>(userReservationHistoryList,HttpStatus.OK);
+        }catch (ResourceNotFoundException e){
+            log.error("exiting userReservationHistory() controller with HttpStatus.NOT_FOUND and exception: \n"+e.toString());
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }catch (Exception e){
+            log.error("exiting userReservationHistory() controller with HttpStatus.INTERNAL_SERVER_ERROR and exception: \n"+e.toString());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }

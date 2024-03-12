@@ -31,6 +31,8 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @EnableMethodSecurity
 public class SecurityConfiguration implements WebMvcConfigurer {
     private static final String[] WHITE_LIST_URL = {"/api/v1/auth/**",
+            "/api/v1/book/books",
+            "/api/v1/book/books/**",
             "/actuator",
             "/actuator/**",
             "/v2/api-docs",

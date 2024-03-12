@@ -1,5 +1,6 @@
 package com.hexaware.lms.service.impl;
 
+import com.hexaware.lms.dto.ReservationDto;
 import com.hexaware.lms.entity.Book;
 import com.hexaware.lms.entity.Loan;
 import com.hexaware.lms.entity.Reservation;
@@ -19,6 +20,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.Optional;
 
 import static com.hexaware.lms.utils.LoanStatus.LOAN;
@@ -134,7 +137,11 @@ public class UserServiceImpl implements UserService {
         if(user.isEmpty()) throw new ResourceNotFoundException("user","id",userId);
 
         List<Loan> loanList = loanRepository.findAllByUser(user.get());
-        log.info("loan list found");
+//        log.info("loan list found");
+//        log.info("Loan list size: {}", loanList.size());
+//        for (Loan loan : loanList) {
+//            log.info("Loan details: {}", loan.toString());
+//        }
 
         List<fineDTO> userFineList = loanList.stream().map(it->{
 
@@ -143,8 +150,16 @@ public class UserServiceImpl implements UserService {
             User finedUser = it.getUser();
             String userName = finedUser.getFirstName()+finedUser.getLastName();
 
-            Duration duration = Duration.between(it.getIssueDate(),it.getReturnDate());
-            Long fine = (duration.toDays() <=7) ? 0 : (duration.toDays()-7) * 5;
+            Duration duration;
+            if (it.getReturnDate() != null) {
+                duration = Duration.between(it.getIssueDate(), it.getReturnDate());
+            } else {
+                // Assuming current time as return date when it is null
+                duration = Duration.between(it.getIssueDate(), Instant.now().atOffset(ZoneOffset.UTC));
+            }
+            Long fine = (Math.abs(duration.toDays()) <=7) ? 0 : (Math.abs(duration.toDays())-7) * 5;
+            log.info(Math.abs(duration.toDays())+"");
+            log.info(fine.toString());
 
             return fineDTO.builder()
                     .book(bookName)
@@ -157,9 +172,11 @@ public class UserServiceImpl implements UserService {
                     .build();
         }).collect(Collectors.toList());
 
-        log.debug("exiting AdminServiceImpl.getUserFine() service with return data: {}", userFineList.toString());
+
+        log.debug("exiting UserServiceImpl.getUserFine() service with return data: {}", userFineList.toString());
         return userFineList;
     }
+
 
     @Override
     public void setStatusLost(long loanId) throws ResourceNotFoundException,IllegalArgumentException {
@@ -202,6 +219,25 @@ public class UserServiceImpl implements UserService {
 
         log.debug("exiting AdminServiceImpl.submitBook() service with return data: {}", submitBookDTO.toString());
         return  submitBookDTO;
+    }
+
+    @Override
+    public List<ReservationDto> getUserReservation(long userId) throws ResourceNotFoundException {
+
+        Optional<User> user = userRepository.findById(userId);
+        if(user.isEmpty()) throw new ResourceNotFoundException("user","id",userId);
+
+        List<ReservationDto> reservationList = userRepository.findReservationHistory(userId)
+                .stream()
+                .map(reservation -> ReservationDto.builder()
+                        .issueTimestamp(reservation.getIssueTimestamp())
+                        .bookName(reservation.getBook().getTitle())
+                        .build())
+                .collect(Collectors.toList());
+        log.info("reservation list found");
+
+        log.debug("exiting USerServiceImpl.getUserReservation() service with return data: {}", reservationList.toString());
+        return reservationList;
     }
 
 }

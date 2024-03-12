@@ -36,5 +36,5 @@ public class BookDto {
     private int bookCount;
     @NotEmpty
     private String imageURL;
-
+    private String link;
 }

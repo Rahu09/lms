@@ -29,4 +29,5 @@ public class Book {
     private BigDecimal cost;//
     private int bookCount;
     private String imageURL;
+    private String link;
 }
