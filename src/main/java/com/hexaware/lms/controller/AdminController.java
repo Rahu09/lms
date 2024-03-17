@@ -199,4 +199,52 @@ public class AdminController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @GetMapping(path = "/loanwarncount")
+    public ResponseEntity<Integer> loanWarnCount(
+    ) {
+        log.debug("entered loanWarnCount() controller");
+        log.info("Request received: {} - {}", "loanWarnCount()", "/api/v1/admin/loanwarncount");
+        try {
+            Integer loanwarncount = adminService.getLoanWarningCount();
+
+            log.debug("exiting loanWarnCount() controller with HttpStatus.OK");
+            return new ResponseEntity<>(loanwarncount, HttpStatus.OK);
+        }
+        catch (Exception e){
+            log.error("exiting loanWarnCount() controller with HttpStatus.INTERNAL_SERVER_ERROR and exception: \n"+e.toString());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    @GetMapping(path = "/lateloan")
+    public ResponseEntity<List<LoanDto>> lateLoan(
+    ) {
+        log.debug("entered lateLoan() controller");
+        log.info("Request received: {} - {}", "lateLoan()", "/api/v1/admin/lateloan");
+        try {
+            List<LoanDto> lateLoan = adminService.getLateLoan();
+
+            log.debug("exiting lateLoan() controller with HttpStatus.OK");
+            return new ResponseEntity<>(lateLoan, HttpStatus.OK);
+        }
+        catch (Exception e){
+            log.error("exiting lateLoan() controller with HttpStatus.INTERNAL_SERVER_ERROR and exception: \n"+e.toString());
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
+
+    //return book request - set status as late for late books(bookid, userid), create a notification for userid and bookid(get bookname from this)
+    @PostMapping("/alert-book-request")
+    public ResponseEntity<String> createAlertNotification() {
+        adminService.createAlertRequest();  //sends notification as well as sets loan status to late
+        return ResponseEntity.ok("Alert notification created successfully.");
+    }
+
+    @PostMapping("/remind-book-request")
+    public ResponseEntity<String> createReminderNotification() {
+        adminService.createReminderRequest();   //sends notificaiton
+        return ResponseEntity.ok("Reminder notification created successfully.");
+    }
 }

@@ -24,4 +24,12 @@ public interface AdminService {
     List<fineDTO> getUserFine(long userId) throws ResourceNotFoundException;
 
     List<fineDTO> getTotalFine() throws ResourceNotFoundException;
+
+    Integer getLoanWarningCount();
+
+    List<LoanDto> getLateLoan();
+
+    void createAlertRequest();
+
+    void createReminderRequest();
 }

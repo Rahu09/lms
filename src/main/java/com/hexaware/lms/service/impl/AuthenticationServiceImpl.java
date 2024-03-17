@@ -83,12 +83,14 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         var auth = authenticationRepository.findByEmail(request.getEmail());
         if(auth.isEmpty()) throw new ResourceNotFoundException("authentication","email",request.getEmail());
+
         var user = userRepository.findById(auth.get().getId());
         var jwtToken = jwtService.generateToken(auth.get());
 
 
         revokeAllUserTokens(auth.get());
         saveUserToken(auth.get(),jwtToken);
+
         AuthenticationResponse authenticationResponse =  AuthenticationResponse
                 .builder()
                 .token(jwtToken)
@@ -107,7 +109,12 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         if(auth.isEmpty()) throw new ResourceNotFoundException("authentication","email",email);
         var user = userRepository.findById(auth.get().getId());
 
+        if(user.isEmpty()) throw new ResourceNotFoundException("user" , "useremail", email);
         UserDetailDto userDetailDto = UserDetailDto.builder()
+                .noOfBooksLoan(user.get().getNoOfBooksLoan())
+                .gender(user.get().getGender())
+                .contactNo(user.get().getContactNo())
+                .address(user.get().getAddress())
                 .email(auth.get().getEmail())
                 .firstName(user.get().getFirstName())
                 .lastName(user.get().getLastName())

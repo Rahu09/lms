@@ -18,9 +18,9 @@ public class ReservationDto {
 
     private Long id;
 
-    private User user;
+    private Long bookId;
 
-    private Book book;
+    private String imgUrl;
 
     private OffsetDateTime issueTimestamp;
 

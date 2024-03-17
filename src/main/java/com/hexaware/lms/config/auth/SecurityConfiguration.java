@@ -33,6 +33,7 @@ public class SecurityConfiguration implements WebMvcConfigurer {
     private static final String[] WHITE_LIST_URL = {"/api/v1/auth/**",
             "/api/v1/book/books",
             "/api/v1/book/books/**",
+            "/api/v1/book/bookFilter",
             "/actuator",
             "/actuator/**",
             "/v2/api-docs",

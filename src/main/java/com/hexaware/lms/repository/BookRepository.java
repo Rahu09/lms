@@ -44,4 +44,13 @@ public interface BookRepository extends JpaRepository<Book, Long> {
             "JOIN BookCategoryMapper bcm ON c.id = bcm.category.id " +
             "WHERE bcm.book.id = :bookId")
     Optional<List<String>> findCategoryByBookId(Long bookId);
+
+    @Query("SELECT DISTINCT b.authorName FROM Book b")
+    List<String> findDistinctAuthorNames();
+
+    @Query("SELECT DISTINCT b.title FROM Book b")
+    List<String> findDistinctBookNames();
+
+    @Query("SELECT DISTINCT b.language FROM Book b")
+    List<String> findDistinctLanguages();
 }

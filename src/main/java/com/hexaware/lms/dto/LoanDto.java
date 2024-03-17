@@ -1,8 +1,9 @@
 package com.hexaware.lms.dto;
 
+import com.hexaware.lms.entity.Book;
+import com.hexaware.lms.entity.User;
 import com.hexaware.lms.utils.LoanStatus;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,19 +12,19 @@ import lombok.NoArgsConstructor;
 import java.time.OffsetDateTime;
 
 @Data
-@AllArgsConstructor
 @NoArgsConstructor
+@AllArgsConstructor
 @Builder
-public class fineDTO {
+public class LoanDto {
 
-    private Long id;
     private OffsetDateTime issueDate;
+
     private OffsetDateTime returnDate;
+
     @Enumerated(value = EnumType.STRING)
     private LoanStatus status;
-    private String book;
-    private long bookId;
-    private String imageUrl;
-    private String user;
-    private Long fineAmount;
+
+    private User user;
+
+    private Book book;
 }

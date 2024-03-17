@@ -1,15 +1,13 @@
 package com.hexaware.lms.controller;
 
-import com.hexaware.lms.dto.ReservationDto;
+import com.hexaware.lms.dto.*;
 import com.hexaware.lms.entity.Loan;
 import com.hexaware.lms.entity.Reservation;
 import com.hexaware.lms.exception.LoanLimitReachedException;
 import com.hexaware.lms.exception.ResourceNotFoundException;
 
-import com.hexaware.lms.dto.UserLoanHistoryDTO;
-import com.hexaware.lms.dto.fineDTO;
-import com.hexaware.lms.dto.SubmitBookDTO;
 import com.hexaware.lms.exception.AmountInsufficientException;
+import com.hexaware.lms.service.BookService;
 import com.hexaware.lms.service.UserService;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
@@ -74,18 +72,10 @@ public class UserController {
     ) throws ResourceNotFoundException {
         log.debug("entered userFine() controller");
         log.info("Request received: {} - {}", "userFine()", "/api/v1/user/userFine/{userId}");
-        try{
             List<fineDTO> userFineList = userService.getUserFine(userId);
 
             log.debug("exiting userFine() controller with HttpStatus.OK");
             return new ResponseEntity<>(userFineList,HttpStatus.OK);
-        }catch (ResourceNotFoundException e){
-            log.error("exiting userFine() controller with HttpStatus.NOT_FOUND and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (Exception e){
-            log.error("exiting userFine() controller with HttpStatus.INTERNAL_SERVER_ERROR and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
     }
 
     @PutMapping(path = "/setStatusLost/{loanId}")
@@ -94,22 +84,11 @@ public class UserController {
     ) throws ResourceNotFoundException,IllegalArgumentException {
         log.debug("entered setStatusLost() controller");
         log.info("Request received: {} - {}", "setStatusLost()", "/api/v1/user/setStatusLost/{loanId}");
-        try{
             userService.setStatusLost(loanId);
 
             log.debug("exiting setStatusLost() controller with HttpStatus.OK");
             return new ResponseEntity<>(HttpStatus.OK);
-        }catch (ResourceNotFoundException e){
-            log.error("exiting setStatusLost() controller with HttpStatus.NOT_FOUND and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }catch (IllegalArgumentException e){
-            log.error("exiting setStatusLost() controller with HttpStatus.NOT_ACCEPTABLE and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
-        }
-        catch (Exception e){
-            log.error("exiting setStatusLost() controller with HttpStatus.INTERNAL_SERVER_ERROR and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+
     }
 
     @PostMapping(path = "/submitBook/{loanId}")
@@ -119,25 +98,10 @@ public class UserController {
     ) throws ResourceNotFoundException, AmountInsufficientException {
         log.debug("entered submitBook() controller");
         log.info("Request received: {} - {}", "submitBook()", "/api/v1/user/submitBook/{loanId}");
-        try{
             SubmitBookDTO submitData = userService.submitBook(loanId,fineAmount);
 
             log.debug("exiting submitBook() controller with HttpStatus.OK");
             return new ResponseEntity<>(submitData,HttpStatus.OK);
-        }catch (ResourceNotFoundException e){
-            log.error("exiting submitBook() controller with HttpStatus.NOT_FOUND and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }catch (AmountInsufficientException e){
-            log.error("exiting submitBook() controller with HttpStatus.PAYMENT_REQUIRED and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.PAYMENT_REQUIRED);
-        }catch (IllegalArgumentException e){
-            log.error("exiting submitBook() controller with HttpStatus.NOT_ACCEPTABLE and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.NOT_ACCEPTABLE);
-        }
-        catch (Exception e){
-            log.error("exiting submitBook() controller with HttpStatus.INTERNAL_SERVER_ERROR and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
     }
 
     @GetMapping(path = "/userReservationHistory/{userId}")
@@ -146,17 +110,23 @@ public class UserController {
     ) throws ResourceNotFoundException {
         log.debug("entered userReservationHistory() controller");
         log.info("Request received: {} - {}", "userReservationHistory()", "/api/v1/user/userReservationHistory/{userId}");
-        try{
             List<ReservationDto> userReservationHistoryList = userService.getUserReservation(userId);
 
             log.debug("exiting userReservationHistory() controller with HttpStatus.OK");
             return new ResponseEntity<>(userReservationHistoryList,HttpStatus.OK);
-        }catch (ResourceNotFoundException e){
-            log.error("exiting userReservationHistory() controller with HttpStatus.NOT_FOUND and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }catch (Exception e){
-            log.error("exiting userReservationHistory() controller with HttpStatus.INTERNAL_SERVER_ERROR and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+
+    }
+
+    //update user from userid
+    @PutMapping(path = "/userdetails/{userId}")
+    public ResponseEntity<UserDetailDto> updateUserDetails(@PathVariable("userId") @NotNull Long userId, @RequestBody UserDetailDto userDetailDto) throws ResourceNotFoundException {
+        log.debug("Entered updateUserDetails() controller.");
+        log.info("Request received: api/v1/user/userdetails/{userId}");
+
+        // Call the service method to update user details
+        UserDetailDto updatedUserDetailDto = userService.updateUserDetails(userId, userDetailDto);
+
+        log.debug("Exited updateUserDetails() controller.");
+        return new ResponseEntity<>(updatedUserDetailDto, HttpStatus.OK);
     }
 }

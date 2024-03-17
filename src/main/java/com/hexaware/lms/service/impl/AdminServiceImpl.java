@@ -7,11 +7,14 @@ import com.hexaware.lms.entity.*;
 import com.hexaware.lms.exception.ResourceNotFoundException;
 import com.hexaware.lms.repository.*;
 import com.hexaware.lms.service.AdminService;
+import com.hexaware.lms.utils.NotificationType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
+import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -218,5 +221,102 @@ public class AdminServiceImpl implements AdminService {
 
         log.debug("exiting AdminServiceImpl.getTotalFine() service with return data: {}", totalFineList.toString());
         return totalFineList;
+    }
+
+    @Override
+    public Integer getLoanWarningCount() {
+        OffsetDateTime today = OffsetDateTime.now().truncatedTo(ChronoUnit.DAYS); // Today
+        OffsetDateTime issueDate = today.minusDays(6); // 6 days ago
+        return loanRepository.getLoanCountForDate(issueDate);
+    }
+
+    @Override
+    public List<LoanDto> getLateLoan() {
+        List<Loan> lateLoanList = loanRepository.findAllLateLoans();
+
+        //convert to dto
+        List<LoanDto> lateLoanDtoList =lateLoanList.stream().map(it->{
+
+            return LoanDto.builder()
+                    .status(it.getStatus())
+                    .book(it.getBook())
+                    .issueDate(it.getIssueDate())
+                    .returnDate(it.getReturnDate())
+                    .user(it.getUser())
+                    .build();
+        }).collect(Collectors.toList());
+        return lateLoanDtoList;
+    }
+
+    @Override
+    public void createAlertRequest() {
+
+        //find all loans with date 7 days from today
+        OffsetDateTime today = OffsetDateTime.now().truncatedTo(ChronoUnit.DAYS); // Today
+        OffsetDateTime issueDate = today.minusDays(7); // 7 days ago
+
+
+        //get all exact 7 days old loans
+        List<Loan> loanList = loanRepository.getAllLoansIssueDate(issueDate);
+
+        // create alert notification for all
+        for (Loan loan : loanList) {
+            Long userId = loan.getUser().getId();
+            Long bookId = loan.getBook().getId();
+
+            Optional<Book> bookOptional = bookRepository.findById(bookId);
+            Optional<User> userOptional = userRepository.findById(userId);
+
+            if (bookOptional.isPresent() && userOptional.isPresent()) {
+                String bookName = bookOptional.get().getTitle();
+                User user = userOptional.get();
+
+                Notification notification = Notification.builder()
+                        .message("Please return " + bookName+".")
+                        .type(NotificationType.ALERT)
+                        .seen(false)
+                        .user(user)
+                        .build();
+
+                notificationRepository.save(notification);
+            }
+        }
+        //set status as late
+        loanRepository.updateStatusToLateByIssueDate(issueDate);
+    }
+
+    @Override
+    public void createReminderRequest() {
+
+        //find all loans with date 6 days from today
+        OffsetDateTime today = OffsetDateTime.now().truncatedTo(ChronoUnit.DAYS); // Today
+        OffsetDateTime issueDate = today.minusDays(6); // 6 days ago
+
+
+        //get all loans with status = LOAN , which have issue date as given issue date
+        List<Loan> loanList = loanRepository.getAllLoansIssueDate(issueDate);
+
+        //now create reminder notification for all
+        for (Loan loan : loanList) {
+            Long userId = loan.getUser().getId();
+            Long bookId = loan.getBook().getId();
+
+            Optional<Book> bookOptional = bookRepository.findById(bookId);
+            Optional<User> userOptional = userRepository.findById(userId);
+
+            if (bookOptional.isPresent() && userOptional.isPresent()) {
+                String bookName = bookOptional.get().getTitle();
+                User user = userOptional.get();
+
+                Notification notification = Notification.builder()
+                        .message("Please return " + bookName + " by tomorrow.")
+                        .type(NotificationType.REMINDER)
+                        .seen(false)
+                        .user(user)
+                        .build();
+
+                notificationRepository.save(notification);
+            }
+        }
     }
 }

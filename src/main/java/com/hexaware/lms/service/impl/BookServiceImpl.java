@@ -4,13 +4,12 @@ package com.hexaware.lms.service.impl;
 import com.hexaware.lms.Mapper.impl.BookMapper;
 import com.hexaware.lms.dto.BookDto;
 import com.hexaware.lms.dto.BookFilterDto;
-import com.hexaware.lms.entity.Book;
-import com.hexaware.lms.entity.BookCategoryMapper;
-import com.hexaware.lms.entity.Loan;
-import com.hexaware.lms.entity.Reservation;
+import com.hexaware.lms.entity.*;
 import com.hexaware.lms.exception.ResourceNotFoundException;
 import com.hexaware.lms.repository.*;
 import com.hexaware.lms.service.BookService;
+import com.hexaware.lms.utils.LoanStatus;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -20,7 +19,7 @@ import org.springframework.stereotype.Service;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.time.OffsetDateTime;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
@@ -67,10 +66,15 @@ public class BookServiceImpl implements BookService {
                     String base64Image = "";
                     try{
                         File imageFile = new File("E:/production/hexa/lms/lms/src/main/resources/static/"+it.getImageURL());
+
                         FileInputStream fileInputStreamReader = new FileInputStream(imageFile);
+
                         byte[] imageData = new byte[(int) imageFile.length()];
+
                         fileInputStreamReader.read(imageData);
+
                         fileInputStreamReader.close();
+
                         base64Image = Base64.getEncoder().encodeToString(imageData);
                     } catch (Exception e){
                         log.info("error in finding image");
@@ -170,7 +174,7 @@ public class BookServiceImpl implements BookService {
                             .description(it.getDescription())
                             .build();
                 });
-        log.debug("Exited BookServiceImpl.findAll()  with return data: {} ", bookDtos.toString());
+        log.debug("Exited BookServiceImpl.bookFilter()  with return data: {} ", bookDtos.toString());
         return bookDtos;
     }
 
@@ -371,5 +375,57 @@ public class BookServiceImpl implements BookService {
         return noOfBooksLoan;
     }
 
+    @Override
+    public void borrowBook(Long userId, Long bookId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new EntityNotFoundException("Book with id " + bookId + " not found"));
+
+        Loan loan = Loan.builder()
+                .user(user)
+                .book(book)
+                .issueDate(OffsetDateTime.now())
+                .returnDate(null)
+                .status(LoanStatus.LOAN)
+                .build();
+        //reduce the book count in book table by 1
+        book.setBookCount(book.getBookCount() - 1);
+        user.setNoOfBooksLoan(user.getNoOfBooksLoan()+1);
+        bookRepository.save(book);
+        userRepository.save(user);
+        loanRepository.save(loan);
+    }
+
+    public void reserveBook(Long userId, Long bookId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("User with id " + userId + " not found"));
+
+        Book book = bookRepository.findById(bookId)
+                .orElseThrow(() -> new EntityNotFoundException("Book with id " + bookId + " not found"));
+
+        Reservation reservation = Reservation.builder()
+                .user(user)
+                .book(book)
+                .issueTimestamp(OffsetDateTime.now())
+                .build();
+
+        reservationRepository.save(reservation);
+    }
+
+    @Override
+    public List<String> getAllUniqueAuthorNames() {
+        return bookRepository.findDistinctAuthorNames();
+    }
+
+    @Override
+    public List<String> getAllUniqueLanguages() {
+        return bookRepository.findDistinctLanguages();
+    }
+
+    @Override
+    public List<String> getAllBooksName() {
+        return bookRepository.findDistinctBookNames();
+    }
 
 }

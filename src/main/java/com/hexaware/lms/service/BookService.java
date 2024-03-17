@@ -8,7 +8,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -48,4 +47,14 @@ public interface BookService {
     Integer findNoOfBooksLoanByEmail(String userEmail);
 
     Page<BookDto> bookFilter(BookFilterDto bookFilterDto, Pageable pageable);
+
+    void borrowBook(Long userId, Long bookId);
+
+    void reserveBook(Long userId, Long bookId);
+
+    List<String> getAllUniqueAuthorNames();
+
+    List<String> getAllUniqueLanguages();
+
+    List<String> getAllBooksName();
 }

@@ -2,6 +2,7 @@ package com.hexaware.lms.controller;
 
 import com.hexaware.lms.dto.BookDto;
 import com.hexaware.lms.dto.BookFilterDto;
+import com.hexaware.lms.dto.ImageDto;
 import com.hexaware.lms.entity.Book;
 import com.hexaware.lms.exception.ResourceNotFoundException;
 import com.hexaware.lms.service.BookService;
@@ -51,6 +52,16 @@ public class BookController {
 //        return books;
 //    }
 
+
+    @GetMapping(path="/booksName")
+    public List<String> getAllBooksName(){
+        log.debug("Entered getAllBooksName() controller.");
+        log.info("Request recieved: /api/v1/book/getAllBooksName");
+        List<String > books = bookService.getAllBooksName();
+        log.debug("Exited getAllBooksName() controller.");
+        return books;
+    }
+
     @GetMapping(path="/books")
     public Page<BookDto> getAllBooks(Pageable pageable){
         log.debug("Entered getallbooks() controller.");
@@ -60,7 +71,7 @@ public class BookController {
         return books;
     }
 
-    @GetMapping(path="/bookFilter")
+    @PostMapping(path="/bookFilter")
     public Page<BookDto> getBookFilter(
             Pageable pageable,
             @RequestBody BookFilterDto bookFilterDto
@@ -117,22 +128,22 @@ public class BookController {
     }
 
     //book full update
-    @PutMapping(path = "/updateBook/{id}")
-    public ResponseEntity<BookDto> fullUpdateBook(@PathVariable("id") @NotNull Long id, @Valid @RequestBody BookDto bookDto) {
-        log.debug("Entered fullupdatebook() controller.");
-        log.info("Request recieved: api/v1/book/books/{id}");
-        try{
-            BookDto bookDto1 = bookService.fullUpdate(bookDto,id);
-            log.debug("Exited fullupdatebook() controller with HttpStatus.OK.");
-            return new ResponseEntity<>(bookDto1, HttpStatus.OK);
-        }
-        catch (Exception e)
-        {
-            log.debug("Exited fullupdatebook() controller with HttpStatus.INTERNAL_SERVER_ERROR.and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-    }
+//    @PutMapping(path = "/updateBook/{id}")
+//    public ResponseEntity<BookDto> fullUpdateBook(@PathVariable("id") @NotNull Long id, @Valid @RequestBody BookDto bookDto) {
+//        log.debug("Entered fullupdatebook() controller.");
+//        log.info("Request recieved: api/v1/book/books/{id}");
+//        try{
+//            BookDto bookDto1 = bookService.fullUpdate(bookDto,id);
+//            log.debug("Exited fullupdatebook() controller with HttpStatus.OK.");
+//            return new ResponseEntity<>(bookDto1, HttpStatus.OK);
+//        }
+//        catch (Exception e)
+//        {
+//            log.debug("Exited fullupdatebook() controller with HttpStatus.INTERNAL_SERVER_ERROR.and exception: \n"+e.toString());
+//            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+//        }
+//
+//    }
 
     //book partial update
     @PatchMapping(path="/updateBook/{id}")
@@ -339,6 +350,43 @@ public class BookController {
         return ResponseEntity.ok(noOfBooksLoan);
     }
 
+    //borrow/loan book with userid and bookid
+    @PostMapping("/borrow/{userId}/{bookId}")
+    public ResponseEntity borrowBook(@PathVariable Long userId, @PathVariable Long bookId) {
+        log.debug("Entered borrowBook controller.");
+        log.info("Request received: POST /api/v1/loan/borrow");
 
+        bookService.borrowBook(userId, bookId);
+
+        log.debug("Exited borrowBook controller with HttpStatus.CREATED.");
+        return ResponseEntity.ok().build();
+    }
+
+    //user reserve book
+    @PostMapping("/reserve/{userId}/{bookId}")
+    public ResponseEntity reserveBook(@PathVariable Long userId, @PathVariable Long bookId) {
+        log.debug("Entered reserveBook controller.");
+        log.info("Request received: POST /api/v1/reservation/reserve");
+
+        bookService.reserveBook(userId, bookId);
+
+        log.debug("Exited reserveBook controller with HttpStatus.CREATED.");
+        return ResponseEntity.ok().build();
+    }
+
+
+
+    //get authorname list and language list
+        @GetMapping("/unique-authors")
+    public ResponseEntity<List<String>> getAllUniqueAuthorNames() {
+        List<String> uniqueAuthorNames = bookService.getAllUniqueAuthorNames();
+        return ResponseEntity.ok(uniqueAuthorNames);
+    }
+
+    @GetMapping("/unique-languages")
+    public ResponseEntity<List<String>> getAllUniqueLanguages() {
+        List<String> uniqueLanguages = bookService.getAllUniqueLanguages();
+        return ResponseEntity.ok(uniqueLanguages);
+    }
 
 }

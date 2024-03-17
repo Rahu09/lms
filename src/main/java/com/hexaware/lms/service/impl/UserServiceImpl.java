@@ -1,27 +1,24 @@
 package com.hexaware.lms.service.impl;
 
-import com.hexaware.lms.dto.ReservationDto;
-import com.hexaware.lms.entity.Book;
-import com.hexaware.lms.entity.Loan;
-import com.hexaware.lms.entity.Reservation;
-import com.hexaware.lms.entity.User;
+import com.hexaware.lms.Mapper.impl.UserMapper;
+import com.hexaware.lms.dto.*;
+import com.hexaware.lms.entity.*;
 import com.hexaware.lms.exception.LoanLimitReachedException;
 import com.hexaware.lms.exception.ResourceNotFoundException;
-import com.hexaware.lms.repository.BookRepository;
-import com.hexaware.lms.repository.UserRepository;
+import com.hexaware.lms.repository.*;
 import com.hexaware.lms.service.UserService;
-import com.hexaware.lms.dto.UserLoanHistoryDTO;
-import com.hexaware.lms.dto.fineDTO;
-import com.hexaware.lms.dto.SubmitBookDTO;
 import com.hexaware.lms.exception.AmountInsufficientException;
-import com.hexaware.lms.repository.LoanRepository;
 import com.hexaware.lms.utils.LoanStatus;
+import com.hexaware.lms.utils.NotificationType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.Base64;
 import java.util.Optional;
 
 import static com.hexaware.lms.utils.LoanStatus.LOAN;
@@ -38,6 +35,9 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final LoanRepository loanRepository;
     private final BookRepository bookRepository;
+    private final UserMapper userMapper;
+    private final NotificationRepository notificationRepository;
+    private final ReservationRepository reservationRepository;
 
     @Override
     public Reservation createReservation(Long userid, Long bookid) throws ResourceNotFoundException {
@@ -150,6 +150,23 @@ public class UserServiceImpl implements UserService {
             User finedUser = it.getUser();
             String userName = finedUser.getFirstName()+finedUser.getLastName();
 
+            String base64Image = "";
+            try{
+                File imageFile = new File("E:/production/hexa/lms/lms/src/main/resources/static/"+book.getImageURL());
+
+                FileInputStream fileInputStreamReader = new FileInputStream(imageFile);
+
+                byte[] imageData = new byte[(int) imageFile.length()];
+
+                fileInputStreamReader.read(imageData);
+
+                fileInputStreamReader.close();
+
+                base64Image = Base64.getEncoder().encodeToString(imageData);
+            } catch (Exception e){
+                log.info("error in finding image");
+            }
+
             Duration duration;
             if (it.getReturnDate() != null) {
                 duration = Duration.between(it.getIssueDate(), it.getReturnDate());
@@ -165,6 +182,8 @@ public class UserServiceImpl implements UserService {
                     .book(bookName)
                     .user(userName)
                     .id(it.getId())
+                    .imageUrl(base64Image)
+                    .bookId(book.getId())
                     .issueDate(it.getIssueDate())
                     .returnDate(it.getReturnDate())
                     .status(it.getStatus())
@@ -217,6 +236,62 @@ public class UserServiceImpl implements UserService {
                 .userId(loan.get().getUser().getId())
                 .build();
 
+        Long bookId = loan.get().getBook().getId();
+        Book book = loan.get().getBook();
+        User user  = loan.get().getUser();
+
+        // as soon as the user submits the book the bookcount in book entity should be increased by one
+        book.setBookCount(book.getBookCount()+1);
+        bookRepository.save(book);
+
+        //userbookcount -1
+        user.setNoOfBooksLoan(user.getNoOfBooksLoan()-1);
+        userRepository.save(user);
+
+        //after that the reservation table for that book id should be checked and get the oldest one
+        Optional<Reservation> optionalReservation = reservationRepository.findOldestReservationByBookId(bookId);
+        if(optionalReservation.isPresent()) //if a reservation exists then do the below steps otherwise skip
+        {
+            Reservation reservation = optionalReservation.get();
+            Book reservationBook  = reservation.getBook();
+            User reservationUser = reservation.getUser();
+
+            //after that create a loan from that reservation details
+            Loan loan1 = Loan.builder()
+                    .issueDate(OffsetDateTime.now())
+                    .returnDate(null)
+                    .status(LOAN)
+                    .book(reservation.getBook())
+                    .user(reservation.getUser())
+                    .build();
+
+            //decrease the bookcount by one after reserving
+            book.setBookCount(book.getBookCount()-1);
+            bookRepository.save(book);
+
+            //userbookcount -1
+            user.setNoOfBooksLoan(user.getNoOfBooksLoan()-1);
+            userRepository.save(user);
+
+            //then delete the reservation from the table
+            reservationRepository.deleteReservationById(reservation.getId());
+            //create a notificaiton with INFO status which says that bookname has been loaned to userid
+
+            // Retrieve the user by the given user ID
+
+            // Create the notification entity
+            Notification notification = Notification.builder()
+                    .message(reservation.getBook().getTitle() + " has been loaned.")
+                    .seen(false)
+                    .type(NotificationType.INFO)
+                    .user(reservation.getUser())
+                    .build();
+
+            // Save the notification entity to the database
+            notificationRepository.save(notification);
+        }
+
+
         log.debug("exiting AdminServiceImpl.submitBook() service with return data: {}", submitBookDTO.toString());
         return  submitBookDTO;
     }
@@ -229,10 +304,32 @@ public class UserServiceImpl implements UserService {
 
         List<ReservationDto> reservationList = userRepository.findReservationHistory(userId)
                 .stream()
-                .map(reservation -> ReservationDto.builder()
+                .map(reservation -> {
+                    String base64Image = "";
+                    try{
+                        File imageFile = new File("E:/production/hexa/lms/lms/src/main/resources/static/"+reservation.getImgUrl());
+
+                        FileInputStream fileInputStreamReader = new FileInputStream(imageFile);
+
+                        byte[] imageData = new byte[(int) imageFile.length()];
+
+                        fileInputStreamReader.read(imageData);
+
+                        fileInputStreamReader.close();
+
+                        base64Image = Base64.getEncoder().encodeToString(imageData);
+                    } catch (Exception e){
+                        log.info("error in finding image");
+                    }
+
+                    return ReservationDto.builder()
+                        .imgUrl(base64Image)
+                        .id(reservation.getId())
+                        .bookId(reservation.getBookId())
                         .issueTimestamp(reservation.getIssueTimestamp())
-                        .bookName(reservation.getBook().getTitle())
-                        .build())
+                        .bookName(reservation.getBookName())
+                        .build();
+                })
                 .collect(Collectors.toList());
         log.info("reservation list found");
 
@@ -240,4 +337,33 @@ public class UserServiceImpl implements UserService {
         return reservationList;
     }
 
+    @Override
+    public UserDetailDto updateUserDetails(Long id, UserDetailDto userDetailDto) throws ResourceNotFoundException {
+        log.debug("Entered BokServiceImpl.partialUpdate()  with arg: {} and {} ", id, userDetailDto.toString());
+        User userEntity = userMapper.mapFrom(userDetailDto);
+
+
+        Optional<User> user = userRepository.findById(id);
+        if (user.isEmpty()) {
+            throw new ResourceNotFoundException("user", "userid", id);
+        }
+
+        return user.map(existingUser -> {
+            // Update existingBook with data from bookEntity
+            Optional.ofNullable(userEntity.getFirstName()).ifPresent(existingUser::setFirstName);
+            Optional.ofNullable(userEntity.getLastName()).ifPresent(existingUser::setLastName);
+            Optional.ofNullable(userEntity.getContactNo()).ifPresent(existingUser::setContactNo);
+            Optional.ofNullable(userEntity.getAddress()).ifPresent(existingUser::setAddress);
+            Optional.ofNullable(userEntity.getGender()).ifPresent(existingUser::setGender);
+
+            // Save the updated bookEntity
+            User updatedUser = userRepository.save(existingUser);
+            UserDetailDto userDetailDto1 = userMapper.mapTo(updatedUser);
+
+            // Convert the updated BookEntity back to a BookDto
+            log.debug("Exited BookServiceImpl.partialUpdate()  with return data: {} ", userDetailDto1.toString());
+            return userDetailDto1;
+        }).orElse(null);
+
+    }
 }
