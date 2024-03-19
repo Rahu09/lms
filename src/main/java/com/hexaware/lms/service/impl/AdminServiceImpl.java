@@ -1,5 +1,6 @@
 package com.hexaware.lms.service.impl;
 
+import com.hexaware.lms.Mapper.impl.BookMapper;
 import com.hexaware.lms.Mapper.impl.CategoryMapper;
 import com.hexaware.lms.Mapper.impl.NotificationMapper;
 import com.hexaware.lms.dto.*;
@@ -31,6 +32,8 @@ public class AdminServiceImpl implements AdminService {
     private final NotificationRepository notificationRepository;
     private final CategoryMapper categoryMapper;
     private final NotificationMapper notificationMapper;
+    private final BookMapper bookMapper;
+    private final BookCategoryMapperRepository bookCategoryMapperRepository;
     @Override
     public List<CategoryDTO> findAll() {
         log.debug("entered AdminServiceImpl.findAll() service");
@@ -318,5 +321,77 @@ public class AdminServiceImpl implements AdminService {
                 notificationRepository.save(notification);
             }
         }
+    }
+
+    @Override
+    public BookDto partialUpdate(Long id, BookDto bookDto) throws ResourceNotFoundException {
+        log.debug("Entered BokServiceImpl.partialUpdate()  with arg: {} and {} ", id, bookDto.toString());
+        Book bookEntity = bookMapper.mapFrom(bookDto);
+
+
+        Optional<Book> book = bookRepository.findById(id);
+        if (book.isEmpty()) {
+            throw new ResourceNotFoundException("book", "bookid", id);
+        }
+
+        return book.map(existingBook -> {
+            // Update existingBook with data from bookEntity
+            Optional.ofNullable(bookEntity.getCost()).ifPresent(existingBook::setCost);
+            Optional.ofNullable(bookEntity.getEdition()).ifPresent(existingBook::setEdition);
+            Optional.ofNullable(bookEntity.getDescription()).ifPresent(existingBook::setDescription);
+            Optional.ofNullable(bookEntity.getIsbn()).ifPresent(existingBook::setIsbn);
+            Optional.ofNullable(bookEntity.getAuthorName()).ifPresent(existingBook::setAuthorName);
+            Optional.ofNullable(bookEntity.getLanguage()).ifPresent(existingBook::setLanguage);
+            Optional.ofNullable(bookEntity.getPublisherName()).ifPresent(existingBook::setPublisherName);
+            Optional.ofNullable(bookEntity.getImageURL()).ifPresent(existingBook::setImageURL);
+            Optional.ofNullable(bookEntity.getTitle()).ifPresent(existingBook::setTitle);
+            Optional.ofNullable(bookEntity.getPages()).ifPresent(existingBook::setPages);
+            Optional.ofNullable(bookEntity.getBookCount()).ifPresent(existingBook::setBookCount);
+
+            // Save the updated bookEntity
+            Book updatedBook = bookRepository.save(existingBook);
+            BookDto bookDto1 = bookMapper.mapTo(updatedBook);
+
+            // Convert the updated BookEntity back to a BookDto
+            log.debug("Exited BookServiceImpl.partialUpdate()  with return data: {} ", bookDto1.toString());
+            return bookDto1;
+        }).orElse(null);
+    }
+
+    @Override
+    public void delete(Long id) throws ResourceNotFoundException {
+            log.debug("Entered BokServiceImpl.delete()  with arg: {}", id);
+            if (!isExists(id)) {
+                throw new ResourceNotFoundException("book", "bookid", id);
+            }
+            Reservation reservation = reservationRepository.findByBook(bookRepository.findById(id));
+            Loan loan = loanRepository.findByBook(bookRepository.findById(id));
+            BookCategoryMapper bookCategoryMapper = bookCategoryMapperRepository.findByBook(bookRepository.findById(id));
+
+            if(reservation!=null)
+            {
+                reservation.setBook(null);
+                reservationRepository.save(reservation);
+            }
+            if(loan!=null)
+            {
+                loan.setBook(null);
+                loanRepository.save(loan);
+            }
+
+            if(bookCategoryMapper!=null)
+            {
+                bookCategoryMapper.setBook(null);
+                bookCategoryMapperRepository.save(bookCategoryMapper);
+            }
+
+            log.debug("Exited BookServiceImpl.delete().");
+            bookRepository.deleteById(id);
+
+    }
+    public boolean isExists(Long id) {
+        boolean exists = bookRepository.existsById(id);
+        log.debug("Exited BookServiceImpl.isExists()  with return data: {} ", exists);
+        return exists;
     }
 }

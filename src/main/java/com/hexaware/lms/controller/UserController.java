@@ -66,6 +66,7 @@ public class UserController {
         }
     }
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping(path = "/userFine/{userId}")
     public ResponseEntity<List<fineDTO>> userFine(
             @PathVariable("userId")@NotNull long userId
@@ -104,6 +105,7 @@ public class UserController {
             return new ResponseEntity<>(submitData,HttpStatus.OK);
     }
 
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @GetMapping(path = "/userReservationHistory/{userId}")
     public ResponseEntity<List<ReservationDto>> userReservationHistory(
             @PathVariable("userId")@NotNull long userId
@@ -118,6 +120,7 @@ public class UserController {
     }
 
     //update user from userid
+    @PreAuthorize("hasAnyRole('USER','ADMIN')")
     @PutMapping(path = "/userdetails/{userId}")
     public ResponseEntity<UserDetailDto> updateUserDetails(@PathVariable("userId") @NotNull Long userId, @RequestBody UserDetailDto userDetailDto) throws ResourceNotFoundException {
         log.debug("Entered updateUserDetails() controller.");

@@ -32,4 +32,8 @@ public interface AdminService {
     void createAlertRequest();
 
     void createReminderRequest();
+
+    BookDto partialUpdate(Long id, BookDto bookDto) throws ResourceNotFoundException;
+
+    void delete(Long id) throws ResourceNotFoundException;
 }

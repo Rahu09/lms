@@ -2,28 +2,34 @@ package com.hexaware.lms.controller;
 
 import com.hexaware.lms.dto.BookDto;
 import com.hexaware.lms.dto.BookFilterDto;
-import com.hexaware.lms.dto.ImageDto;
+import com.hexaware.lms.dto.CategoryDTO;
 import com.hexaware.lms.entity.Book;
 import com.hexaware.lms.exception.ResourceNotFoundException;
 import com.hexaware.lms.service.BookService;
+
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+
 @Tag(name = "User")
 @RestController
 @RequiredArgsConstructor
@@ -41,17 +47,6 @@ public class BookController {
         log.debug("Exiting createBook() controller with HttpStatus.CREATED.");
         return new ResponseEntity<>(savedBookDto, HttpStatus.CREATED) ;
     }
-
-    //get all books
-//    @GetMapping(path="/books")
-//    public List<BookDto> getAllBooks(){
-//        log.debug("Entered getallbooks() controller.");
-//        log.info("Request recieved: /api/v1/book/books");
-//        List<BookDto> books = bookService.findAll();
-//        log.debug("Exited getallbooks() controller.");
-//        return books;
-//    }
-
 
     @GetMapping(path="/booksName")
     public List<String> getAllBooksName(){
@@ -146,74 +141,35 @@ public class BookController {
 //    }
 
     //book partial update
-    @PatchMapping(path="/updateBook/{id}")
-    public ResponseEntity<BookDto> partialUpdate(@PathVariable("id") @NotNull Long id, @NotNull @RequestBody BookDto bookDto) throws ResourceNotFoundException{
-
-        log.debug("Entered partialUpdatebook() controller.");
-        log.info("Request recieved: api/v1/book/books/{id}");
-        try{
-            BookDto updatedbookDto = bookService.partialUpdate(id, bookDto);
-            log.debug("Exited partialUpdatebook() controller with HttpStatus.OK.");
-            return new ResponseEntity<>(updatedbookDto, HttpStatus.OK);
-        }
-        catch (ResourceNotFoundException e)
-        {
-            log.debug("Exited partialUpdatebook()() controller with HttpStatus.NOT_FOUND.and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        catch (Exception e)
-        {
-            log.debug("Exited partialUpdatebook() controller with HttpStatus.INTERNAL_SERVER_ERROR.and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-
-    }
+//    @PatchMapping(path="/updateBook/{id}")
+//    public ResponseEntity<BookDto> partialUpdate(@PathVariable("id") @NotNull Long id, @NotNull @RequestBody BookDto bookDto) throws ResourceNotFoundException{
+//
+//        log.debug("Entered partialUpdatebook() controller.");
+//        log.info("Request recieved: api/v1/book/books/{id}");
+//        BookDto updatedbookDto = bookService.partialUpdate(id, bookDto);
+//        log.debug("Exited partialUpdatebook() controller with HttpStatus.OK.");
+//        return new ResponseEntity<>(updatedbookDto, HttpStatus.OK);
+//    }
 
     //delete by id
-    @DeleteMapping(path = "/deletebook/{id}")
-    public ResponseEntity deleteBook(@PathVariable("id") @NotNull Long id) throws ResourceNotFoundException{
-        log.debug("Entered deletebook() controller.");
-        log.info("Request recieved: api/v1/book/deletebook/{id}");
-        try{
-            bookService.delete(id);
-            log.debug("Exited deletebook() controller with HttpStatus.NO_CONTENT.");
-            return new ResponseEntity(HttpStatus.NO_CONTENT);
-        }
-        catch (ResourceNotFoundException e)
-        {
-            log.debug("Exited deletebook() controller with HttpStatus.NOT_FOUND.and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        catch (Exception e)
-        {
-            log.debug("Exited deletebook() controller with HttpStatus.INTERNAL_SERVER_ERROR.and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-    }
+//    @DeleteMapping(path = "/deletebook/{id}")
+//    public ResponseEntity deleteBook(@PathVariable("id") @NotNull Long id) throws ResourceNotFoundException{
+//        log.debug("Entered deletebook() controller.");
+//        log.info("Request recieved: api/v1/book/deletebook/{id}");
+//
+//        bookService.delete(id);
+//        log.debug("Exited deletebook() controller with HttpStatus.NO_CONTENT.");
+//        return new ResponseEntity(HttpStatus.NO_CONTENT);
+//    }
 
     //search bar autosuggestions
     @GetMapping(path = "/search/{searchquery}")
-    public ResponseEntity<List<Book>> getBookSearchBar(@PathVariable("searchquery") @NotEmpty String search) throws ResourceNotFoundException{
+    public ResponseEntity<List<BookDto>> getBookSearchBar(@PathVariable("searchquery") @NotEmpty String search) throws ResourceNotFoundException{
         log.debug("Entered getBookSearchBar() controller.");
         log.info("Request recieved: api/v1/book/search/{searchquery}");
-        Optional<List<Book>> books= null;
-
-        try
-        {
-            books = bookService.searchBarBook(search);
-            log.debug("Exited getBookSearchBar() controller with HttpStatus.OK.");
-            return new ResponseEntity<>(books.get(), HttpStatus.OK);
-        }
-        catch (ResourceNotFoundException e)
-        {
-            log.debug("Exited getBookSearchBar() controller with HttpStatus.NOT_FOUND.and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-        catch (Exception e)
-        {
-            log.debug("Exited getBookSearchBar() controller with HttpStatus.INTERNAL_SERVER_ERROR.and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        List<BookDto> books = bookService.searchBarBook(search);
+        log.debug("Exited getBookSearchBar() controller with HttpStatus.OK.");
+        return new ResponseEntity<>(books, HttpStatus.OK);
 
     }
 
@@ -374,7 +330,16 @@ public class BookController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping(path = "/getCategory")
+    public ResponseEntity<List<String>> getCategory() throws FileNotFoundException {
+        log.debug("entered /getCategory() controller");
+        log.info("Request received: {} - {}", "getCategory()", "/api/v1/admin/getCategory");
 
+        List<String> response = bookService.findAllCategory();
+
+        log.debug("exiting /getCategory() controller with return result response: "+response.toString());
+        return new ResponseEntity<>(response, HttpStatus.OK);
+    }
 
     //get authorname list and language list
         @GetMapping("/unique-authors")

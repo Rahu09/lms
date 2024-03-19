@@ -64,18 +64,32 @@ public class AdminController {
     ) throws ResourceNotFoundException {
         log.debug("entered deleteCategory() controller");
         log.info("Request received: {} - {}", "getCategory()", "/api/v1/admin/deleteCategory/{id}");
-        try {
+        
             adminService.deleteCategory(id);
 
             log.debug("exiting deleteCategory() controller with HttpStatus.NO_CONTENT");
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-        } catch (ResourceNotFoundException e){
-            log.error("exiting deleteCategory() controller with HttpStatus.NOT_FOUND and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }catch (Exception e){
-            log.error("exiting deleteCategory() controller with HttpStatus.INTERNAL_SERVER_ERROR and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+      
+    }
+
+    @PatchMapping(path="/updateBook/{id}")
+    public ResponseEntity<BookDto> partialUpdate(@PathVariable("id") @NotNull Long id, @NotNull @RequestBody BookDto bookDto) throws ResourceNotFoundException{
+
+        log.debug("Entered partialUpdatebook() controller.");
+        log.info("Request recieved: api/v1/book/books/{id}");
+        BookDto updatedbookDto = adminService.partialUpdate(id, bookDto);
+        log.debug("Exited partialUpdatebook() controller with HttpStatus.OK.");
+        return new ResponseEntity<>(updatedbookDto, HttpStatus.OK);
+    }
+
+    @DeleteMapping(path = "/deleteBook/{id}")
+    public ResponseEntity deleteBook(@PathVariable("id") @NotNull Long id) throws ResourceNotFoundException{
+        log.debug("Entered deletebook() controller.");
+        log.info("Request recieved: api/v1/book/deletebook/{id}");
+
+        adminService.delete(id);
+        log.debug("Exited deletebook() controller with HttpStatus.NO_CONTENT.");
+        return new ResponseEntity(HttpStatus.NO_CONTENT);
     }
 
     @PostMapping(path = "/returnRequest/{id}")
@@ -85,18 +99,11 @@ public class AdminController {
     ) throws ResourceNotFoundException {
         log.debug("entered returnRequest() controller");
         log.info("Request received: {} - {}", "returnRequest()", "/api/v1/admin/returnRequest/{id}");
-        try{
             NotificationDTO savedDto = adminService.sendReturnRequest(notificationDTO, id);
 
             log.debug("exiting returnRequest() controller with HttpStatus.OK");
-            return new ResponseEntity(savedDto,HttpStatus.OK);
-        } catch (ResourceNotFoundException e){
-            log.error("exiting returnRequest() controller with HttpStatus.NOT_FOUND and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }catch (Exception e){
-            log.error("exiting returnRequest() controller with HttpStatus.INTERNAL_SERVER_ERROR and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+            return new ResponseEntity<NotificationDTO>(savedDto,HttpStatus.OK);
+        
     }
 
     @GetMapping(path = "/bookLoanHistory/{bookId}")
@@ -106,18 +113,11 @@ public class AdminController {
 
         log.debug("entered bookLoanHistory() controller");
         log.info("Request received: {} - {}", "bookLoanHistory()", "/api/v1/admin/bookLoanHistory/{bookId}");
-        try{
             List<BookLoanHistoryDTO> bookLoanHistoryList = adminService.getBookLoanHistory(bookId);
 
             log.debug("exiting bookLoanHistory() controller with HttpStatus.OK");
             return new ResponseEntity<>(bookLoanHistoryList,HttpStatus.OK);
-        }catch (ResourceNotFoundException e){
-            log.error("exiting bookLoanHistory() controller with HttpStatus.NOT_FOUND and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }catch (Exception e){
-            log.error("exiting bookLoanHistory() controller with HttpStatus.INTERNAL_SERVER_ERROR and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        
     }
 
     @GetMapping(path = "/bookReservationHistory/{bookId}")
@@ -127,18 +127,11 @@ public class AdminController {
 
         log.debug("entered bookReservationHistory() controller");
         log.info("Request received: {} - {}", "bookReservationHistory()", "/api/v1/admin/bookReservationHistory/{bookId}");
-        try{
             List<BookReservationHistoryDTO> bookLoanHistoryList = adminService.getBookReservationHistory(bookId);
 
             log.debug("exiting bookReservationHistory() controller with HttpStatus.OK");
             return new ResponseEntity<>(bookLoanHistoryList,HttpStatus.OK);
-        }catch (ResourceNotFoundException e){
-            log.error("exiting bookReservationHistory() controller with HttpStatus.NOT_FOUND and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }catch (Exception e){
-            log.error("exiting bookReservationHistory() controller with HttpStatus.INTERNAL_SERVER_ERROR and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+       
     }
 
     @GetMapping(path = "/userLoanHistory/{userId}")
@@ -147,18 +140,12 @@ public class AdminController {
     ) throws ResourceNotFoundException {
         log.debug("entered userLoanHistory() controller");
         log.info("Request received: {} - {}", "userLoanHistory()", "/api/v1/admin/userLoanHistory/{userId}");
-        try{
+       
             List<UserLoanHistoryDTO> userLoanHistoryList = adminService.getUserLoanHistory(userId);
 
             log.debug("exiting userLoanHistory() controller with HttpStatus.OK");
             return new ResponseEntity<>(userLoanHistoryList,HttpStatus.OK);
-        }catch (ResourceNotFoundException e){
-            log.error("exiting userLoanHistory() controller with HttpStatus.NOT_FOUND and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }catch (Exception e){
-            log.error("exiting userLoanHistory() controller with HttpStatus.INTERNAL_SERVER_ERROR and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        
     }
 
     @GetMapping(path = "/userFine/{userId}")
@@ -167,18 +154,12 @@ public class AdminController {
     ) throws ResourceNotFoundException {
         log.debug("entered userFine() controller");
         log.info("Request received: {} - {}", "userFine()", "/api/v1/admin/userFine/{userId}");
-        try{
+       
             List<fineDTO> userFineList = adminService.getUserFine(userId);
 
             log.debug("exiting userFine() controller with HttpStatus.OK");
             return new ResponseEntity<>(userFineList,HttpStatus.OK);
-        }catch (ResourceNotFoundException e){
-            log.error("exiting userFine() controller with HttpStatus.NOT_FOUND and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }catch (Exception e){
-            log.error("exiting userFine() controller with HttpStatus.INTERNAL_SERVER_ERROR and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+       
     }
 
     @GetMapping(path = "/totalFine")
@@ -186,18 +167,12 @@ public class AdminController {
     ) throws ResourceNotFoundException {
         log.debug("entered totalFine() controller");
         log.info("Request received: {} - {}", "totalFine()", "/api/v1/admin/totalFine");
-        try{
+        
             List<fineDTO> userFineList = adminService.getTotalFine();
 
             log.debug("exiting totalFine() controller with HttpStatus.OK");
             return new ResponseEntity<>(userFineList,HttpStatus.OK);
-        }catch (ResourceNotFoundException e){
-            log.error("exiting totalFine() controller with HttpStatus.NOT_FOUND and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }catch (Exception e){
-            log.error("exiting totalFine() controller with HttpStatus.INTERNAL_SERVER_ERROR and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+       
     }
 
     @GetMapping(path = "/loanwarncount")
@@ -205,16 +180,12 @@ public class AdminController {
     ) {
         log.debug("entered loanWarnCount() controller");
         log.info("Request received: {} - {}", "loanWarnCount()", "/api/v1/admin/loanwarncount");
-        try {
+        
             Integer loanwarncount = adminService.getLoanWarningCount();
 
             log.debug("exiting loanWarnCount() controller with HttpStatus.OK");
             return new ResponseEntity<>(loanwarncount, HttpStatus.OK);
-        }
-        catch (Exception e){
-            log.error("exiting loanWarnCount() controller with HttpStatus.INTERNAL_SERVER_ERROR and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+       
     }
 
     @GetMapping(path = "/lateloan")
@@ -222,16 +193,12 @@ public class AdminController {
     ) {
         log.debug("entered lateLoan() controller");
         log.info("Request received: {} - {}", "lateLoan()", "/api/v1/admin/lateloan");
-        try {
+        
             List<LoanDto> lateLoan = adminService.getLateLoan();
 
             log.debug("exiting lateLoan() controller with HttpStatus.OK");
             return new ResponseEntity<>(lateLoan, HttpStatus.OK);
-        }
-        catch (Exception e){
-            log.error("exiting lateLoan() controller with HttpStatus.INTERNAL_SERVER_ERROR and exception: \n"+e.toString());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+       
     }
 
 

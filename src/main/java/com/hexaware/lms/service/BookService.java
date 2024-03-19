@@ -2,6 +2,7 @@ package com.hexaware.lms.service;
 
 import com.hexaware.lms.dto.BookDto;
 import com.hexaware.lms.dto.BookFilterDto;
+import com.hexaware.lms.dto.CategoryDTO;
 import com.hexaware.lms.entity.Book;
 import com.hexaware.lms.exception.ResourceNotFoundException;
 import org.springframework.data.domain.Page;
@@ -22,13 +23,13 @@ public interface BookService {
 
     BookDto findOne(Long id) throws ResourceNotFoundException;
 
-    boolean isExists(Long id);
+//    boolean isExists(Long id);
 
-    BookDto partialUpdate(Long id, BookDto bookEntity) throws ResourceNotFoundException;
+//    BookDto partialUpdate(Long id, BookDto bookEntity) throws ResourceNotFoundException;
 
-    void delete(Long id) throws ResourceNotFoundException;
+//    void delete(Long id) throws ResourceNotFoundException;
 
-    Optional<List<Book>> searchBarBook(String search) throws ResourceNotFoundException;
+    List<BookDto> searchBarBook(String search) throws ResourceNotFoundException;
 
     Optional<List<Book>> searchByAuthor(String authorName) throws ResourceNotFoundException;
 
@@ -36,7 +37,7 @@ public interface BookService {
 
     Optional<List<Book>> findByCategory(String search) throws ResourceNotFoundException;
 
-    BookDto fullUpdate(BookDto bookDto, Long id);
+//    BookDto fullUpdate(BookDto bookDto, Long id);
 
     Optional<List<String>> findCategory(Long id);
 
@@ -57,4 +58,6 @@ public interface BookService {
     List<String> getAllUniqueLanguages();
 
     List<String> getAllBooksName();
+
+    List<String> findAllCategory();
 }
