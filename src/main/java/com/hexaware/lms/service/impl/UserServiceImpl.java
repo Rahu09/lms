@@ -1,5 +1,6 @@
 package com.hexaware.lms.service.impl;
 
+import com.hexaware.lms.Mapper.impl.NotificationMapper;
 import com.hexaware.lms.Mapper.impl.UserMapper;
 import com.hexaware.lms.dto.*;
 import com.hexaware.lms.entity.*;
@@ -38,6 +39,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final NotificationRepository notificationRepository;
     private final ReservationRepository reservationRepository;
+    private final NotificationMapper notificationMapper;
 
     @Override
     public Reservation createReservation(Long userid, Long bookid) throws ResourceNotFoundException {
@@ -366,4 +368,18 @@ public class UserServiceImpl implements UserService {
         }).orElse(null);
 
     }
+
+    @Override
+    public void setOneNotificationSeen(long notificationId) {
+        log.debug("Entered UserServiceImpl.setOneNotificationSeen()  with arg: {}  ", notificationId);
+        notificationRepository.markNotificationAsSeen(notificationId);
+        log.debug("Exited UserServiceImpl.setOneNotificationSeen()");
+    }
+    @Override
+    public void setUserNotificationSeen(long userId) {
+        log.debug("Entered UserServiceImpl.setUserNotificationSeen()  with arg: {}  ", userId);
+        notificationRepository.markAllNotificationsAsSeenForUser(userId);
+        log.debug("Exited UserServiceImpl.setUserNotificationSeen() ");
+    }
+
 }

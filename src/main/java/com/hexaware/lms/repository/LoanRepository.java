@@ -26,7 +26,7 @@ public interface LoanRepository extends JpaRepository<Loan, Long> {
     @Query("SELECT COUNT(l) FROM Loan l WHERE l.book.id = :id AND l.status = 'LOAN'")
     Integer getLoanCount(Long id);
 
-    @Query("SELECT COUNT(l) FROM Loan l WHERE l.issueDate = :issueDate AND l.status = 'LOAN'")
+    @Query("SELECT COUNT(l) FROM Loan l WHERE DATE(l.issueDate) = DATE(:issueDate) AND l.status = 'LOAN'")
     Integer getLoanCountForDate(OffsetDateTime issueDate);
 
     @Query("SELECT l FROM Loan l WHERE l.status = 'LATE'")

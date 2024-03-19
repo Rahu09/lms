@@ -28,4 +28,8 @@ public interface UserService {
     List<ReservationDto> getUserReservation(long userId) throws ResourceNotFoundException;
 
     UserDetailDto updateUserDetails(Long userId, UserDetailDto userDetailDto) throws ResourceNotFoundException;
+
+    void setOneNotificationSeen(long notificationId);
+
+    void setUserNotificationSeen(long userId);
 }

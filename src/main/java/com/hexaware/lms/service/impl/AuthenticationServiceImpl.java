@@ -1,15 +1,14 @@
 package com.hexaware.lms.service.impl;
 
 import com.hexaware.lms.config.auth.JwtService;
-import com.hexaware.lms.dto.AuthenticationRequest;
-import com.hexaware.lms.dto.AuthenticationResponse;
-import com.hexaware.lms.dto.RegisterRequestDTO;
-import com.hexaware.lms.dto.UserDetailDto;
+import com.hexaware.lms.dto.*;
 import com.hexaware.lms.entity.Authentication;
+import com.hexaware.lms.entity.Notification;
 import com.hexaware.lms.entity.Token;
 import com.hexaware.lms.entity.User;
 import com.hexaware.lms.exception.ResourceNotFoundException;
 import com.hexaware.lms.repository.AuthenticationRepository;
+import com.hexaware.lms.repository.NotificationRepository;
 import com.hexaware.lms.repository.TokenRepository;
 import com.hexaware.lms.repository.UserRepository;
 import com.hexaware.lms.service.AuthenticationService;
@@ -20,6 +19,10 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -33,6 +36,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final UserRepository userRepository;
     private final TokenRepository tokenRepository;
+    private final NotificationRepository notificationRepository;
     public AuthenticationResponse register(RegisterRequestDTO request) {
         log.debug("entered AuthenticationServiceImpl.register() service with args: {}",request.toString());
 
@@ -110,6 +114,19 @@ public class AuthenticationServiceImpl implements AuthenticationService {
         var user = userRepository.findById(auth.get().getId());
 
         if(user.isEmpty()) throw new ResourceNotFoundException("user" , "useremail", email);
+
+
+        List<Notification> notificationList = notificationRepository.findByUser(user);
+        List<NotificationResponseDTO> notificationDTOList =notificationList.stream().map(it-> {
+            return NotificationResponseDTO.builder()
+                    .userID(user.get().getId())
+                    .id(it.getId())
+                    .message(it.getMessage())
+                    .seen(it.isSeen())
+                    .type(it.getType())
+                    .build();
+        }).collect(Collectors.toList());
+
         UserDetailDto userDetailDto = UserDetailDto.builder()
                 .noOfBooksLoan(user.get().getNoOfBooksLoan())
                 .gender(user.get().getGender())
@@ -121,6 +138,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
                 .image(user.get().getImage())
                 .role(auth.get().getRole().toString())
                 .id(user.get().getId())
+                .notification(notificationDTOList)
                 .build();
         return userDetailDto;
     }

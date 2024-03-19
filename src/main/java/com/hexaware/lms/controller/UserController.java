@@ -132,4 +132,30 @@ public class UserController {
         log.debug("Exited updateUserDetails() controller.");
         return new ResponseEntity<>(updatedUserDetailDto, HttpStatus.OK);
     }
+
+    //set one notification as seen
+    @PostMapping(path = "/notification/one-notification/{notificaitonId}")
+    public ResponseEntity setOneNotificationSeen(
+            @PathVariable("notificaitonId") @NotNull long notificationId
+    ) throws ResourceNotFoundException{
+        log.debug("entered setOneNotificationSeen() controller");
+
+        userService.setOneNotificationSeen(notificationId);
+
+        log.debug("exiting setOneNotificationSeen() controller with HttpStatus.OK");
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    //set all notification as seen
+    @PostMapping(path = "/notification/all-notification/{userId}")
+    public ResponseEntity setAllNotificationSeen(
+            @PathVariable("userId") @NotNull long userId
+    ) throws ResourceNotFoundException{
+        log.debug("entered setAllNotificationSeen() controller");
+
+        userService.setUserNotificationSeen(userId);
+
+        log.debug("exiting setAllNotificationSeen() controller with HttpStatus.OK");
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
 }

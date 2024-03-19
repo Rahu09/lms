@@ -1,3 +1,4 @@
+
 package com.hexaware.lms.dto;
 
 import com.hexaware.lms.entity.User;
@@ -16,16 +17,12 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class NotificationDTO {
+public class NotificationResponseDTO {
     private Long id;
     @Size(max = 100, min = 5, message = "Invalid message. Size should be between 3 to 30.")
     private String message;
-
     private boolean seen;
-
     @Enumerated(value = EnumType.STRING)
     private NotificationType type;
-
-
-    private User user;
+    private Long userID;
 }
